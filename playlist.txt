@@ -1,6 +1,4 @@
 Playlist: pl2
 
 Playlist: pl1
-5,4,3
-Playlist: pl3
-
+2,3,4

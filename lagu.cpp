@@ -4,6 +4,33 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include "player.h"
+
+void playWithGUI(Lagu *song)
+{
+    putarLagu(song->fileAudio);
+
+    while (true)
+    {
+        PlayerAction action = showPlayerGUI(song, bgm);
+
+        if (action == NEXT)
+        {
+            song = song->next;
+            putarLagu(song->fileAudio);
+        }
+        else if (action == PREV)
+        {
+            song = song->prev;
+            putarLagu(song->fileAudio);
+        }
+        else
+        {
+            // STOP or NONE - exit
+            break;
+        }
+    }
+}
 
 void update()
 {
@@ -212,7 +239,7 @@ void navigasiLagu()
     }
 
     Lagu *now = head;
-    putarLagu(now->fileAudio);
+    playWithGUI(now);
 
     while (true)
     {
@@ -234,17 +261,19 @@ void navigasiLagu()
         string inputBaru;
         switch (input)
         {
-        case 'P':
-
-            now = now->prev;
-            putarLagu(now->fileAudio);
-            continue;
-
         case 'N':
+        { // ← TAMBAH kurung kurawal
             now = now->next;
-            putarLagu(now->fileAudio);
+            playWithGUI(now);
             continue;
+        } // ← TUTUP kurung kurawal
 
+        case 'P':
+        { // ← TAMBAH kurung kurawal juga
+            now = now->prev;
+            playWithGUI(now);
+            continue;
+        }
         case 'E':
         {
 
@@ -379,7 +408,7 @@ void navigasiLagu()
 
             bgm.stop();
             update();
-            putarLagu(now->fileAudio);
+            playWithGUI(now);
 
             cout << "\nMusik Berhasil Dihapus!\n";
             continue;

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "player.h"
 bool isEmptyPlaylist(Playlist *p)
 {
     return p->front == NULL;
@@ -257,7 +258,6 @@ void opsiPlaylist(Playlist *p)
             NodeLagu *tmp = p->front;
             int nomor = 1;
 
-            // ← UBAH: Loop while instead of for
             while (tmp != NULL)
             {
                 Lagu *lagu = findLaguById(tmp->id);
@@ -292,6 +292,7 @@ void opsiPlaylist(Playlist *p)
             while (tmp != NULL)
             {
                 Lagu *lagu = findLaguById(tmp->id);
+
                 if (lagu == NULL)
                 {
                     cout << "-------------------------------------------------" << endl;
@@ -310,51 +311,46 @@ void opsiPlaylist(Playlist *p)
                         }
                     }
                     cout << "-------------------------------------------------" << endl;
+
+                    char input;
+                    cout << "[N]ext | [Q]uit >> ";
+                    cin >> input;
+                    cin.ignore();
+                    input = toupper(input);
+
+                    if (input == 'Q')
+                    {
+                        bgm.stop();
+                        break;
+                    }
+
+                    tmp = tmp->next;
                 }
                 else
                 {
                     putarLagu(lagu->fileAudio);
-                    cout << "-------------------------------------------------" << endl;
-                    cout << "Lagu diputar: " << lagu->judul << endl;
-                    cout << "Durasi: " << FormattedDuration(lagu) << endl;
+                    PlayerAction action = showPlayerGUI(lagu, bgm);
 
-                    if (tmp->next != NULL)
+                    if (action == STOP || action == NONE)
                     {
-                        Lagu *next = findLaguById(tmp->next->id);
-                        if (next != NULL)
-                        {
-                            cout << "Lagu selanjutnya: " << next->judul << endl;
-                        }
-                        else
-                        {
-                            cout << "Lagu selanjutnya: <Lagu terhapus>" << endl;
-                        }
-                    }
-                    cout << "-------------------------------------------------" << endl;
-                }
-
-                char input;
-                cout << "[N]Next | [Quit] >> ";
-                cin >> input;
-                cin.ignore();
-
-                input = toupper(input);
-
-                if (input == 'Q')
-                {
-                    bgm.stop();
-                    break;
-                }
-                if (input == 'N')
-                {
-                    tmp = tmp->next;
-
-                    if (tmp == NULL)
-                    {
-                        cout << "playlist sudah berakhir" << endl
-                             << endl;
                         bgm.stop();
                         break;
+                    }
+                    else if (action == NEXT)
+                    {
+                        tmp = tmp->next;
+                        if (tmp == NULL)
+                        {
+                            cout << "Playlist sudah berakhir" << endl
+                                 << endl;
+                            bgm.stop();
+                            break;
+                        }
+                    }
+                    else if (action == PREV)
+                    {
+
+                        cout << "Previous not supported in playlist queue" << endl;
                     }
                 }
             }
