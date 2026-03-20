@@ -38,6 +38,9 @@ Lagu *head = NULL;
 Lagu *tail = NULL;
 Playlist *headPlaylist = NULL;
 
+StackLagu *topLagu = NULL;
+StackPlaylist *topPlaylist = NULL;
+
 int main()
 {
     // TODO: Buat menu utama CLI
@@ -52,7 +55,9 @@ int main()
         cout << "3. Navigasi Lagu" << endl;
         cout << "4. Tambahkan Playlist" << endl;
         cout << "5. Lihat Daftar Playlist" << endl;
-        cout << "6. Keluar" << endl;
+        cout << "6. Restore Lagu" << endl;
+        cout << "7. Restore Playlist" << endl;
+        cout << "0. Keluar" << endl;
 
         int input;
         cout << "Pilihan: ";
@@ -84,6 +89,12 @@ int main()
             lihatPlaylist();
             break;
         case 6:
+            restoreLagu();
+            break;
+        case 7:
+            restorePlaylist();
+            break;
+        case 0:
             return 0;
         default:
             cout << "ERROR: Masukkan input yang valid! " << endl;

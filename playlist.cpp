@@ -247,17 +247,33 @@ void opsiPlaylist(Playlist *p)
 
         cout << "Daftar Antrean: " << endl;
         cout << "---------------------------------------------" << endl;
-        NodeLagu *tmp = p->front;
-        for (int i = 0; i < p->size; i++)
-        {
-            Lagu *lagu = findLaguById(tmp->id);
-            cout << i + 1 << "  |  [ID:" << tmp->id << "]" << "  |  " << lagu->judul << endl;
-            tmp = tmp->next;
-        }
 
-        if (p->size == 0)
+        if (p->size == 0 || p->front == NULL)
         {
             cout << "Belum ada lagu pada playlist ini" << endl;
+        }
+        else
+        {
+            NodeLagu *tmp = p->front;
+            int nomor = 1;
+
+            // ← UBAH: Loop while instead of for
+            while (tmp != NULL)
+            {
+                Lagu *lagu = findLaguById(tmp->id);
+
+                if (lagu != NULL)
+                {
+                    cout << nomor << "  |  [ID:" << tmp->id << "]  |  " << lagu->judul << endl;
+                }
+                else
+                {
+                    cout << nomor << "  |  [ID:" << tmp->id << "]  |  <Lagu terhapus>" << endl;
+                }
+
+                tmp = tmp->next;
+                nomor++;
+            }
         }
 
         char input;
@@ -276,16 +292,46 @@ void opsiPlaylist(Playlist *p)
             while (tmp != NULL)
             {
                 Lagu *lagu = findLaguById(tmp->id);
-                putarLagu(lagu->fileAudio);
-                cout << "-------------------------------------------------" << endl;
-                cout << "Lagu diputar: " << lagu->judul << endl;
-                cout << "Durasi: " << FormattedDuration(lagu) << endl;
-                if (tmp->next != NULL)
+                if (lagu == NULL)
                 {
-                    Lagu *next = findLaguById(tmp->next->id);
-                    cout << "Lagu selanjutnya: " << next->judul << endl;
+                    cout << "-------------------------------------------------" << endl;
+                    cout << "Lagu yang diputar: <Lagu terhapus>" << endl;
+
+                    if (tmp->next != NULL)
+                    {
+                        Lagu *next = findLaguById(tmp->next->id);
+                        if (next != NULL)
+                        {
+                            cout << "Lagu selanjutnya: " << next->judul << endl;
+                        }
+                        else
+                        {
+                            cout << "Lagu selanjutnya: <Lagu terhapus>" << endl;
+                        }
+                    }
+                    cout << "-------------------------------------------------" << endl;
                 }
-                cout << "-------------------------------------------------" << endl;
+                else
+                {
+                    putarLagu(lagu->fileAudio);
+                    cout << "-------------------------------------------------" << endl;
+                    cout << "Lagu diputar: " << lagu->judul << endl;
+                    cout << "Durasi: " << FormattedDuration(lagu) << endl;
+
+                    if (tmp->next != NULL)
+                    {
+                        Lagu *next = findLaguById(tmp->next->id);
+                        if (next != NULL)
+                        {
+                            cout << "Lagu selanjutnya: " << next->judul << endl;
+                        }
+                        else
+                        {
+                            cout << "Lagu selanjutnya: <Lagu terhapus>" << endl;
+                        }
+                    }
+                    cout << "-------------------------------------------------" << endl;
+                }
 
                 char input;
                 cout << "[N]Next | [Quit] >> ";
@@ -310,12 +356,6 @@ void opsiPlaylist(Playlist *p)
                         bgm.stop();
                         break;
                     }
-                }
-
-                if (tmp->next != NULL)
-                {
-                    Lagu *next = findLaguById(tmp->next->id);
-                    cout << "Lagu selanjutnya: " << next->judul << endl;
                 }
             }
             break;
@@ -360,16 +400,43 @@ void opsiPlaylist(Playlist *p)
         {
             int id = dequeuePlaylist(p);
             Lagu *lagu = findLaguById(id);
-            if (lagu)
+            if (id == -1)
             {
-                cout << "Lagu " << lagu->judul << " Berhasil Dihapus dari Antrean!" << endl;
+                cout << "Playlist kosong, tidak ada yang bisa dihapus!" << endl;
             }
-
-            savePlaylist();
+            else
+            {
+                Lagu *lagu = findLaguById(id);
+                if (lagu != NULL)
+                {
+                    cout << "Lagu \"" << lagu->judul << "\" berhasil dihapus dari antrean!" << endl;
+                }
+                else
+                {
+                    cout << "Lagu dengan ID " << id << " berhasil dihapus dari antrean!" << endl;
+                }
+                savePlaylist();
+            }
             break;
         }
         case 'D':
         {
+
+            char confirm;
+            cout << "Apakah Anda yakin ingin menghapus playlist ini? (Y/N): ";
+            cin >> confirm;
+            cin.ignore();
+
+            confirm = toupper(confirm);
+
+            if (confirm != 'Y')
+            {
+                cout << "Penghapusan dibatalkan." << endl;
+                break;
+            }
+
+            pushPlaylist(p);
+
             if (headPlaylist == p)
             {
                 headPlaylist = p->next;
@@ -394,4 +461,78 @@ void opsiPlaylist(Playlist *p)
             break;
         }
     }
+}
+
+void pushPlaylist(Playlist *pl)
+{
+    StackPlaylist *newNode = new StackPlaylist();
+
+    newNode->data = new Playlist();
+    newNode->data->nama = pl->nama;
+    newNode->data->size = 0;
+    newNode->data->next = NULL;
+    newNode->data->front = NULL;
+    newNode->data->rear = NULL;
+
+    NodeLagu *temp = pl->front;
+    while (temp != NULL)
+    {
+        enqueuePlaylist(newNode->data, temp->id, false);
+        temp = temp->next;
+    }
+
+    newNode->next = topPlaylist;
+    topPlaylist = newNode;
+}
+
+Playlist *popPlaylist()
+{
+    if (topPlaylist == NULL)
+    {
+        return NULL;
+    }
+
+    StackPlaylist *temp = topPlaylist;
+    Playlist *pl = temp->data;
+
+    topPlaylist = topPlaylist->next;
+    delete temp;
+
+    return pl;
+}
+
+bool isEmptyStackPlaylist()
+{
+    return topPlaylist == NULL;
+}
+
+void restorePlaylist()
+{
+    if (isEmptyStackPlaylist())
+    {
+        cout << "Tidak ada playlist yang bisa di restore" << endl;
+        return;
+    }
+
+    Playlist *pl = popPlaylist();
+
+    pl->next = NULL;
+
+    if (headPlaylist == NULL)
+    {
+        headPlaylist = pl;
+    }
+    else
+    {
+        Playlist *temp = headPlaylist;
+        while (temp->next != NULL)
+        {
+            temp = temp->next;
+        }
+        temp->next = pl;
+    }
+
+    savePlaylist();
+
+    cout << "Playlist \"" << pl->nama << "\" berhasil dipulihkan!" << endl;
 }

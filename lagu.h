@@ -21,3 +21,8 @@ void loadSongs();
 void tambahLagu();
 void lihatDaftarLagu();
 void navigasiLagu();
+
+void pushLagu(Lagu *lagu);
+Lagu *popLagu();
+bool isEmptyStackLagu();
+void restoreLagu();

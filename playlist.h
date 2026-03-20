@@ -27,3 +27,8 @@ int dequeuePlaylist(Playlist *p);
 Lagu *findLaguById(int id);
 void savePlaylist();
 void opsiPlaylist(Playlist *p);
+
+void pushPlaylist(Playlist *pl);
+Playlist *popPlaylist();
+bool isEmptyStackPlaylist();
+void restorePlaylist();

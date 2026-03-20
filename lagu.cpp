@@ -330,6 +330,22 @@ void navigasiLagu()
         }
         case 'D':
         {
+
+            char confirm;
+            cout << "Apakah anda yakin ingin menghapus lagu ini? (y/n): ";
+            cin >> confirm;
+            cin.ignore();
+
+            confirm = toupper(confirm);
+
+            if (confirm != 'Y')
+            {
+                cout << "Penghapusan dibatalkan." << endl;
+                continue;
+            }
+
+            pushLagu(now);
+
             if (now->next == now)
             {
                 delete now;
@@ -378,4 +394,77 @@ void navigasiLagu()
             break;
         }
     }
+}
+
+void pushLagu(Lagu *lagu)
+{
+
+    StackLagu *newNode = new StackLagu();
+
+    newNode->data = new Lagu();
+    newNode->data->id = lagu->id;
+    newNode->data->judul = lagu->judul;
+    newNode->data->penyanyi = lagu->penyanyi;
+    newNode->data->durasi = lagu->durasi;
+    newNode->data->genre = lagu->genre;
+    newNode->data->fileAudio = lagu->fileAudio;
+    newNode->data->next = NULL;
+    newNode->data->prev = NULL;
+
+    newNode->next = topLagu;
+    topLagu = newNode;
+}
+
+Lagu *popLagu()
+{
+    if (topLagu == NULL)
+    {
+        return NULL;
+    }
+
+    StackLagu *temp = topLagu;
+    Lagu *lagu = temp->data;
+
+    topLagu = topLagu->next;
+    delete temp;
+
+    return lagu;
+}
+
+bool isEmptyStackLagu()
+{
+    return topLagu == NULL;
+}
+
+void restoreLagu()
+{
+    if (isEmptyStackLagu())
+    {
+        cout << "Tidak ada lagu yang bisa di restore" << endl;
+        return;
+    }
+
+    Lagu *lagu = popLagu();
+
+    if (head == NULL)
+    {
+        lagu->next = lagu;
+        lagu->prev = lagu;
+        head = lagu;
+        tail = lagu;
+    }
+    else
+    {
+        lagu->prev = tail;
+        lagu->next = head;
+
+        head->prev = lagu;
+        tail->next = lagu;
+
+        tail = lagu;
+    }
+
+    update();
+
+    cout << "Lagu \"" << lagu->judul << "\" berhasil dipulihkan!" << endl;
 }
